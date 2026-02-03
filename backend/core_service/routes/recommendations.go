@@ -1,0 +1,47 @@
+package routes
+
+import (
+	"encoding/json"
+	"net/http"
+
+	"core-service/internal/orchestration"
+)
+
+type RecommendationHandler struct {
+	service *orchestration.Service
+}
+
+func NewRecommendationHandler(service *orchestration.Service) *RecommendationHandler {
+	return &RecommendationHandler{service: service}
+}
+
+func (h *RecommendationHandler) GetRecommendations(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	userID := "user-123"
+	repoID := "repo-xyz"
+
+	userCtx, err := h.service.BuildUserContext(ctx, userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	signals := orchestration.BuildMockSignals(80)
+
+	rec, err := h.service.ScoreRepositoryForUser(ctx, userCtx, repoID, signals)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	resp := orchestration.RecommendationResponse{
+		RepoID:  rec.RepoID,
+		Score:   rec.Score.TotalScore,
+		Level:   rec.Score.Level,
+		Reasons: rec.Score.Reasons,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
+}
