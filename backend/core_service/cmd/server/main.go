@@ -5,13 +5,21 @@ import (
 	"net/http"
 
 	"core-service/config"
+	"core-service/internal/db"
 	"core-service/routes"
 )
 
 func main() {
 	cfg := config.Load()
-	mux := http.NewServeMux()
 
+	if cfg.DatabaseURL != "" {
+		_, err := db.Connect(cfg.DatabaseURL)
+		if err != nil {
+			log.Fatal("Failed to connect to database:", err)
+		}
+	}
+
+	mux := http.NewServeMux()
 	routes.RegisterHealthRoutes(mux)
 
 	log.Printf("Core service running on :%s\n", cfg.ServerPort)
