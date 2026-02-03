@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"core-service/internal/preferences"
+	"core-service/internal/scoring"
 )
 
 type Service struct {
@@ -34,5 +35,21 @@ func (s *Service) BuildUserContext(
 	return &UserContext{
 		UserID:      userID,
 		Preferences: prefs,
+	}, nil
+}
+
+func (s *Service) ScoreRepositoryForUser(
+	ctx context.Context,
+	userCtx *UserContext,
+	repoID string,
+	signals scoring.RepoSignals,
+) (*RepoRecommendation, error) {
+
+	scoreResult := scoring.ComputeScore(signals)
+
+	return &RepoRecommendation{
+		RepoID:  repoID,
+		Score:   scoreResult,
+		Signals: signals,
 	}, nil
 }
