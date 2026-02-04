@@ -17,6 +17,7 @@ import (
 func main() {
 	cfg := config.Load()
 	aiClient := clients.NewAIClient(cfg.AISvcURL)
+	githubClient := clients.NewGitHubClient(cfg.GitHubSvcURL)
 
 	var dbPool *pgxpool.Pool
 	var err error
@@ -32,7 +33,7 @@ func main() {
 	routes.RegisterHealthRoutes(mux)
 
 	prefRepo := preferences.NewRepository(dbPool)
-	orchService := orchestration.NewService(prefRepo, aiClient)
+	orchService := orchestration.NewService(prefRepo, aiClient, githubClient)
 
 	routes.RegisterRoutes(mux, orchService)
 

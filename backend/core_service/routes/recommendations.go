@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"core-service/internal/orchestration"
@@ -36,15 +37,19 @@ func (h *RecommendationHandler) GetRecommendations(w http.ResponseWriter, r *htt
 	}
 
 	issues := orchestration.BuildMockIssues()
+	repoName := "example-repo"
 
-	issues = h.service.EnrichIssues(ctx, issues, 3)
+	issues, err = h.service.FetchAndEnrichIssues(ctx, repoName, 3)
+	if err != nil {
+		log.Printf("failed to fetch issues: %v", err)
+	}
 
 	resp := orchestration.RecommendationResponse{
 		RepoID:  rec.RepoID,
 		Score:   rec.Score.TotalScore,
 		Level:   rec.Score.Level,
 		Reasons: rec.Score.Reasons,
-		Issues: issues,
+		Issues:  issues,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

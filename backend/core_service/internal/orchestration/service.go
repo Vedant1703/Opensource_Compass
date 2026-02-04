@@ -11,12 +11,14 @@ import (
 type Service struct {
 	aiClient *clients.AIClient
 	prefRepo *preferences.Repository
+	githubClient  *clients.GitHubClient
 }
 
-func NewService(prefRepo *preferences.Repository, aiClient *clients.AIClient,) *Service {
+func NewService(prefRepo *preferences.Repository, aiClient *clients.AIClient,githubClient  *clients.GitHubClient) *Service {
 	return &Service{
 		prefRepo: prefRepo,
 		aiClient: aiClient,
+		githubClient: githubClient,
 	}
 }
 
