@@ -35,11 +35,16 @@ func (h *RecommendationHandler) GetRecommendations(w http.ResponseWriter, r *htt
 		return
 	}
 
+	issues := orchestration.BuildMockIssues()
+
+	issues = h.service.EnrichIssues(ctx, issues, 2)
+
 	resp := orchestration.RecommendationResponse{
 		RepoID:  rec.RepoID,
 		Score:   rec.Score.TotalScore,
 		Level:   rec.Score.Level,
 		Reasons: rec.Score.Reasons,
+		Issues: issues,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

@@ -5,4 +5,5 @@ type RecommendationResponse struct {
 	Score  int      `json:"score"`
 	Level  string   `json:"level"`
 	Reasons []string `json:"reasons"`
+	Issues []Issue 	`json:"issues"`
 }

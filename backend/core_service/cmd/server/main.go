@@ -31,7 +31,6 @@ func main() {
 	mux := http.NewServeMux()
 	routes.RegisterHealthRoutes(mux)
 
-	// initialize dependencies (even if dbPool is nil for now)
 	prefRepo := preferences.NewRepository(dbPool)
 	orchService := orchestration.NewService(prefRepo, aiClient)
 
