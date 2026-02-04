@@ -58,3 +58,37 @@ func (c *GitHubClient) FetchIssues(
 
 	return issues, nil
 }
+
+
+func (c *GitHubClient) FetchRepo(
+	ctx context.Context,
+	repo string,
+) (*GitHubRepo, error) {
+
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		c.baseURL+"/repos/"+repo,
+		nil,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New("github service returned non-200 response")
+	}
+
+	var repoData GitHubRepo
+	if err := json.NewDecoder(resp.Body).Decode(&repoData); err != nil {
+		return nil, err
+	}
+
+	return &repoData, nil
+}

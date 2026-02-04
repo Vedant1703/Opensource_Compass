@@ -38,7 +38,7 @@ func (h *RecommendationHandler) GetRecommendations(w http.ResponseWriter, r *htt
 		return
 	}
 
-	signals := orchestration.BuildMockSignals(80)
+	signals := h.service.BuildRepoSignals(ctx, repoName, 80)
 
 	rec, err := h.service.ScoreRepositoryForUser(ctx, userCtx, repoID, signals)
 	if err != nil {
