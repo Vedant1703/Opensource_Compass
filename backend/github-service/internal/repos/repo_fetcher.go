@@ -14,6 +14,8 @@ type RepoDTO struct{
 	Description string `json:"description"`
 	Stars int `json:"stars"`
 	URL string `json:"url"`
+	LastPushedAt string `json:"last_pushed_at"`
+	OpenIssues int `json:"open_issues"`
 }
 
 func buildORQuery(prefix string, values []string) string{
@@ -74,6 +76,8 @@ func FetchRepos(languages []string, frameworks []string, domains []string, token
 			Description string `json:"description"`
 			Stars int `json:"stargazers_count"`
 			HTMLURL string `json:"html_url"`
+			PushedAt string `json:"pushed_at"`
+			OpenIssuesCount int `json:"open_issues_count"`
 		} `json:"items"`
 	}
 
@@ -88,6 +92,8 @@ func FetchRepos(languages []string, frameworks []string, domains []string, token
 			Description: r.Description,
 			Stars: r.Stars,
 			URL: r.HTMLURL,
+			LastPushedAt: r.PushedAt,
+			OpenIssues: r.OpenIssuesCount,
 		})
 	}
 	return repos, nil
