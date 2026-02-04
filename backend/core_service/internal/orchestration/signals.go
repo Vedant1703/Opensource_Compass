@@ -10,12 +10,10 @@ import (
 func (s *Service) BuildRepoSignals(
 	ctx context.Context,
 	repo string,
-	techMatchPct int,
+	userCtx *UserContext,
 ) scoring.RepoSignals {
 
-	signals := scoring.RepoSignals{
-		TechStackMatchPct: techMatchPct,
-	}
+	signals := scoring.RepoSignals{}
 
 	if s.githubClient == nil {
 		return signals
@@ -25,6 +23,11 @@ func (s *Service) BuildRepoSignals(
 	if err != nil {
 		return signals
 	}
+
+	langs := ExtractLanguages(userCtx)
+techMatch := ComputeTechMatch(langs, repoData.Language)
+
+signals.TechStackMatchPct = techMatch
 
 	updatedTime, _ := time.Parse(time.RFC3339, repoData.UpdatedAt)
 	if time.Since(updatedTime).Hours() < 24*30 {
