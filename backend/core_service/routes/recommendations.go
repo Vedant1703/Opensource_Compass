@@ -37,7 +37,7 @@ func (h *RecommendationHandler) GetRecommendations(w http.ResponseWriter, r *htt
 
 	issues := orchestration.BuildMockIssues()
 
-	issues = h.service.EnrichIssues(ctx, issues, 2)
+	issues = h.service.EnrichIssues(ctx, issues, 3)
 
 	resp := orchestration.RecommendationResponse{
 		RepoID:  rec.RepoID,

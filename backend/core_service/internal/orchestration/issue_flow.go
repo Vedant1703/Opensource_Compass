@@ -11,6 +11,11 @@ func (s *Service) EnrichIssues(
 	count := 0
 
 	for i := range issues {
+
+		if !IsGoodFirstIssue(issues[i].Labels) {
+			continue
+		}
+		
 		if count >= maxAI {
 			break
 		}
