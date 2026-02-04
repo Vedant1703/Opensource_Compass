@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"core-service/config"
+	"core-service/internal/clients"
 	"core-service/internal/db"
 	"core-service/internal/orchestration"
 	"core-service/internal/preferences"
@@ -15,6 +16,7 @@ import (
 
 func main() {
 	cfg := config.Load()
+	aiClient := clients.NewAIClient(cfg.AISvcURL)
 
 	var dbPool *pgxpool.Pool
 	var err error
@@ -31,7 +33,7 @@ func main() {
 
 	// initialize dependencies (even if dbPool is nil for now)
 	prefRepo := preferences.NewRepository(dbPool)
-	orchService := orchestration.NewService(prefRepo)
+	orchService := orchestration.NewService(prefRepo, aiClient)
 
 	routes.RegisterRoutes(mux, orchService)
 

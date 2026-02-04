@@ -3,17 +3,20 @@ package orchestration
 import (
 	"context"
 
+	"core-service/internal/clients"
 	"core-service/internal/preferences"
 	"core-service/internal/scoring"
 )
 
 type Service struct {
+	aiClient *clients.AIClient
 	prefRepo *preferences.Repository
 }
 
-func NewService(prefRepo *preferences.Repository) *Service {
+func NewService(prefRepo *preferences.Repository, aiClient *clients.AIClient,) *Service {
 	return &Service{
 		prefRepo: prefRepo,
+		aiClient: aiClient,
 	}
 }
 
