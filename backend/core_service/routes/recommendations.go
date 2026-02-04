@@ -20,6 +20,12 @@ func (h *RecommendationHandler) GetRecommendations(w http.ResponseWriter, r *htt
 	ctx := r.Context()
 
 	userID := "user-123"
+	repoName := r.URL.Query().Get("repo")
+	if repoName == "" {
+		http.Error(w, "missing repo query parameter", http.StatusBadRequest)
+		return
+	}
+
 	repoID := "repo-xyz"
 
 	userCtx, err := h.service.BuildUserContext(ctx, userID)
@@ -37,7 +43,6 @@ func (h *RecommendationHandler) GetRecommendations(w http.ResponseWriter, r *htt
 	}
 
 	issues := orchestration.BuildMockIssues()
-	repoName := "example-repo"
 
 	issues, err = h.service.FetchAndEnrichIssues(ctx, repoName, 3)
 	if err != nil {
