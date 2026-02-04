@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"github-service/internal/issues"
 	"github-service/internal/repos"
 	"net/http"
 	"os"
@@ -49,4 +50,24 @@ func RegisterGithubRoutes(router *gin.Engine){
 		c.JSON(http.StatusOK, repoList)
 	})
 
+	router.GET("/issues/good-first", func(c *gin.Context){
+		owner := c.Query("owner")
+		repo := c.Query("repo")
+
+		if owner == "" || repo == ""{
+			c.JSON(400, gin.H{
+				"error": "owner and repo are required",
+			})
+			return
+		}
+		token := os.Getenv("GITHUB_TOKEN")
+
+		issues, err := issues.FetchGoodFirstIssues(owner, repo, token)
+		if err != nil{
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(200, issues)
+	})
 }
