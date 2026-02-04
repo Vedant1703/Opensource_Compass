@@ -19,7 +19,11 @@ func NewRecommendationHandler(service *orchestration.Service) *RecommendationHan
 func (h *RecommendationHandler) GetRecommendations(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	userID := "user-123"
+	userID := r.URL.Query().Get("user_id")
+	if userID == "" {
+		http.Error(w, "missing user_id query parameter", http.StatusBadRequest)
+		return
+	}
 	repoName := r.URL.Query().Get("repo")
 	if repoName == "" {
 		http.Error(w, "missing repo query parameter", http.StatusBadRequest)
