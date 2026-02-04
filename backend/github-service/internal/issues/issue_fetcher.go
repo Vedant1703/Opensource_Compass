@@ -51,8 +51,6 @@ func FetchGoodFirstIssues(owner, repo, token string) ([]IssueDTO, error){
 
 	issues := make([]IssueDTO, 0)
 
-	// log.Printf("Fetched %d raw issues\n", len(raw.Items))
-
 	for _, i := range raw.Items{
 		labels := []string{}
 		for _, l := range i.Labels{
