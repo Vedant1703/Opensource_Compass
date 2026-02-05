@@ -35,7 +35,7 @@ func main() {
 	prefRepo := preferences.NewRepository(dbPool)
 	orchService := orchestration.NewService(prefRepo, aiClient, githubClient)
 
-	routes.RegisterRoutes(mux, orchService)
+	routes.RegisterRoutes(mux, orchService, cfg.JWTSecret)
 
 	log.Printf("Core service running on :%s\n", cfg.ServerPort)
 	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, mux))

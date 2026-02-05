@@ -10,6 +10,7 @@ type Config struct {
 	DatabaseURL    string
 	GitHubSvcURL   string
 	AISvcURL       string
+	JWTSecret 	   string
 }
 
 func Load() *Config {
@@ -18,6 +19,7 @@ func Load() *Config {
 		DatabaseURL: getEnv("DATABASE_URL", ""),
 		GitHubSvcURL: getEnv("GITHUB_SERVICE_URL", "http://localhost:8081"),
 		AISvcURL:     getEnv("AI_SERVICE_URL", "http://localhost:8082"),
+		JWTSecret: getEnv("JWT_SECRET", "dev-secret"),
 	}
 
 	return cfg

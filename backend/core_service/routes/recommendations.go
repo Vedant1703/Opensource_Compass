@@ -6,15 +6,20 @@ import (
 	"net/http"
 	"strings"
 
+	"core-service/internal/auth"
 	"core-service/internal/orchestration"
 )
 
 type RecommendationHandler struct {
 	service *orchestration.Service
+	jwtSecret string
 }
 
-func NewRecommendationHandler(service *orchestration.Service) *RecommendationHandler {
-	return &RecommendationHandler{service: service}
+func NewRecommendationHandler(service *orchestration.Service, jwtSecret string) *RecommendationHandler {
+	return &RecommendationHandler{
+		service: service,
+		jwtSecret: jwtSecret,
+	}
 }
 
 func (h *RecommendationHandler) GetRecommendations(w http.ResponseWriter, r *http.Request) {
@@ -26,9 +31,9 @@ func (h *RecommendationHandler) GetRecommendations(w http.ResponseWriter, r *htt
 		token = strings.TrimPrefix(authHeader, "Bearer ")
 	}
 
-	userID := r.URL.Query().Get("user_id")
-	if userID == "" {
-		http.Error(w, "missing user_id query parameter", http.StatusBadRequest)
+	userID, err := auth.ExtractUserID(token, h.jwtSecret)
+	if err != nil {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 	userCtx, err := h.service.BuildUserContext(ctx, userID)
@@ -38,7 +43,7 @@ func (h *RecommendationHandler) GetRecommendations(w http.ResponseWriter, r *htt
 	}
 
 	// repo should be in "owner/repo" format (e.g., nodejs/node)
-	repos, err := h.service.SearchReposForUser(ctx, userCtx,token)
+	repos, err := h.service.SearchReposForUser(ctx, userCtx, token)
 	if err != nil || len(repos) == 0 {
 		http.Error(w, "no repositories found", http.StatusInternalServerError)
 		return
@@ -54,7 +59,7 @@ func (h *RecommendationHandler) GetRecommendations(w http.ResponseWriter, r *htt
 		return
 	}
 
-	issues, err := h.service.FetchAndEnrichIssues(ctx, topRepo, 3,token)
+	issues, err := h.service.FetchAndEnrichIssues(ctx, topRepo, 3, token)
 	if err != nil {
 		log.Printf("failed to fetch issues: %v", err)
 		issues = orchestration.BuildMockIssues()

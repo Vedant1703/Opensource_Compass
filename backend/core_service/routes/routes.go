@@ -9,8 +9,9 @@ import (
 func RegisterRoutes(
 	mux *http.ServeMux,
 	orchService *orchestration.Service,
+	jwtSecret string,
 ) {
-	handler := NewRecommendationHandler(orchService)
+	handler := NewRecommendationHandler(orchService, jwtSecret)
 
 	mux.HandleFunc("/recommendations", handler.GetRecommendations)
 }
