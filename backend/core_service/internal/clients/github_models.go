@@ -1,15 +1,19 @@
 package clients
 
 type GitHubIssue struct {
+	ID     int      `json:"id"`
 	Title  string   `json:"title"`
 	Body   string   `json:"body"`
+	URL    string   `json:"url"`
 	Labels []string `json:"labels"`
 }
 
 type GitHubRepo struct {
-	Name        string `json:"name"`
-	Language    string `json:"language"`
-	Stars       int    `json:"stargazers_count"`
-	UpdatedAt   string `json:"updated_at"`
-	HasIssues   bool   `json:"has_issues"`
+	FullName     string `json:"full_name"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	Stars        int    `json:"stars"`
+	URL          string `json:"url"`
+	LastPushedAt string `json:"last_pushed_at"`
+	OpenIssues   int    `json:"open_issues"`
 }

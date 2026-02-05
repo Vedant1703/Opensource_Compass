@@ -23,18 +23,14 @@ func (s *Service) BuildRepoSignals(
 	if err != nil {
 		return signals
 	}
+	signals.TechStackMatchPct = 70
 
-	langs := ExtractLanguages(userCtx)
-techMatch := ComputeTechMatch(langs, repoData.Language)
-
-signals.TechStackMatchPct = techMatch
-
-	updatedTime, _ := time.Parse(time.RFC3339, repoData.UpdatedAt)
+	updatedTime, _ := time.Parse(time.RFC3339, repoData.LastPushedAt)
 	if time.Since(updatedTime).Hours() < 24*30 {
 		signals.RecentActivity = true
 	}
 
-	if repoData.HasIssues {
+	if repoData.OpenIssues>0 {
 		signals.HasGoodFirstIssues = true
 	}
 
