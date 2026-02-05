@@ -18,6 +18,9 @@ export default function AuthCard() {
 
       <Button
         className="bg-[#238636] hover:bg-[#2ea043] w-full"
+        onClick={() => {
+          window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/auth/github`;
+        }}
       >
         Continue with GitHub
       </Button>
