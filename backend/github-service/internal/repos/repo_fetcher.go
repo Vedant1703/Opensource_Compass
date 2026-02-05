@@ -10,6 +10,7 @@ import (
 )
 
 type RepoDTO struct{
+	FullName string `json:"full_name"`
 	Name string `json:"name"`
 	Description string `json:"description"`
 	Stars int `json:"stars"`
@@ -73,6 +74,7 @@ func FetchRepos(languages []string, frameworks []string, domains []string, token
 	var raw struct{
 		Items []struct{
 			FullName string `json:"full_name"`
+			Name string `json:"name"`
 			Description string `json:"description"`
 			Stars int `json:"stargazers_count"`
 			HTMLURL string `json:"html_url"`
@@ -88,7 +90,8 @@ func FetchRepos(languages []string, frameworks []string, domains []string, token
 	repos := make([]RepoDTO, 0)
 	for _, r := range raw.Items{
 		repos = append(repos, RepoDTO{
-			Name: r.FullName,
+			FullName: r.FullName,
+			Name: strings.Split(r.FullName, "/")[1],
 			Description: r.Description,
 			Stars: r.Stars,
 			URL: r.HTMLURL,
