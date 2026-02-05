@@ -1,5 +1,5 @@
-import FilterBar from "./components/filterbar";
-import RepoGrid from "./components/repogrid";
+import FilterBar from "../issues/components/filterbar";
+import RepoGrid from "../issues/components/repogrid";
 
 export default function DiscoverPage() {
   return (

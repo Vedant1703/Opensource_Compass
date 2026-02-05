@@ -1,4 +1,4 @@
-import RepoCard from "./repocard"
+import RepoCard from "../../discover/components/repocard"
 
 export default function RepoGrid() {
   // mock array for now
