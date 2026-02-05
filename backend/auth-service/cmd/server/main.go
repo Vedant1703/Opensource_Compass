@@ -38,6 +38,6 @@ func main(){
 
 	routes.RegisterAuthRoutes(router)
 
-	log.Println("Auth service running on :8080")
-	router.Run(":8080")
+	log.Println("Auth service running on :8084")
+	router.Run(":8084")
 }
