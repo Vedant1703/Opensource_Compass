@@ -2,6 +2,7 @@ package orchestration
 
 import (
 	"context"
+	"errors"
 )
 
 func (s *Service) SearchReposForUser(
@@ -11,7 +12,7 @@ func (s *Service) SearchReposForUser(
 ) ([]string, error) {
 
 	if s.githubClient == nil {
-		return []string{"nodejs/node"}, nil
+		return nil, errors.New("github client not configured")
 	}
 
 	langs := ExtractLanguages(userCtx)

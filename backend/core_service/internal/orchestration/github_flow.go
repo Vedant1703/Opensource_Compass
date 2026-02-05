@@ -2,6 +2,7 @@ package orchestration
 
 import (
 	"context"
+	"errors"
 	"strings"
 )
 
@@ -14,7 +15,7 @@ func (s *Service) FetchAndEnrichIssues(
 
 	parts := strings.Split(fullRepo, "/")
 	if len(parts) != 2 {
-		return BuildMockIssues(), nil
+		return nil, errors.New("invalid repo format: expected owner/repo")
 	}
 
 	owner := parts[0]
@@ -26,8 +27,7 @@ func (s *Service) FetchAndEnrichIssues(
 
 	rawIssues, err := s.githubClient.FetchGoodFirstIssues(ctx, owner, repo, token)
 	if err != nil {
-		// graceful fallback
-		return BuildMockIssues(), nil
+		return nil,err
 	}
 
 	var issues []Issue

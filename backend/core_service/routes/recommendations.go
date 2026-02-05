@@ -2,7 +2,6 @@ package routes
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strings"
 
@@ -11,13 +10,13 @@ import (
 )
 
 type RecommendationHandler struct {
-	service *orchestration.Service
+	service   *orchestration.Service
 	jwtSecret string
 }
 
 func NewRecommendationHandler(service *orchestration.Service, jwtSecret string) *RecommendationHandler {
 	return &RecommendationHandler{
-		service: service,
+		service:   service,
 		jwtSecret: jwtSecret,
 	}
 }
@@ -61,8 +60,8 @@ func (h *RecommendationHandler) GetRecommendations(w http.ResponseWriter, r *htt
 
 	issues, err := h.service.FetchAndEnrichIssues(ctx, topRepo, 3, token)
 	if err != nil {
-		log.Printf("failed to fetch issues: %v", err)
-		issues = orchestration.BuildMockIssues()
+		http.Error(w, "failed to fetch issues from GitHub service", http.StatusInternalServerError)
+		return
 	}
 
 	resp := orchestration.RecommendationResponse{
