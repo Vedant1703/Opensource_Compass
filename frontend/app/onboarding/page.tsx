@@ -48,6 +48,11 @@ export default function OnboardingPage() {
     }, [isLoading, isAuth]); // Re-run animation when state changes
 
     const handleContinue = () => {
+        // Save preferences to localStorage
+        localStorage.setItem("techStack", JSON.stringify(selectedLanguages));
+        localStorage.setItem("frameworks", JSON.stringify(frameworks));
+        localStorage.setItem("domains", JSON.stringify(domains));
+        
         router.push("/discover");
     };
 

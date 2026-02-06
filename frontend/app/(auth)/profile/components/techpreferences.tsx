@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TechChip from "../../../onboarding/components/techchip";
 
 const LANGUAGES = [
@@ -12,10 +12,27 @@ const LANGUAGES = [
 ];
 
 export default function TechPreferences() {
-  const [selected, setSelected] = useState([
-    "JavaScript",
-    "TypeScript",
-  ]);
+  const [selected, setSelected] = useState<string[]>([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("techStack");
+    if (saved) {
+      try {
+        setSelected(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse tech stack", e);
+      }
+    }
+  }, []);
+
+  const handleToggle = (lang: string) => {
+    const newSelected = selected.includes(lang)
+      ? selected.filter((v) => v !== lang)
+      : [...selected, lang];
+    
+    setSelected(newSelected);
+    localStorage.setItem("techStack", JSON.stringify(newSelected));
+  };
 
   return (
     <div className="space-y-4">
@@ -29,13 +46,7 @@ export default function TechPreferences() {
             key={lang}
             label={lang}
             selected={selected.includes(lang)}
-            toggle={() =>
-              setSelected(
-                selected.includes(lang)
-                  ? selected.filter((v) => v !== lang)
-                  : [...selected, lang]
-              )
-            }
+            toggle={() => handleToggle(lang)}
           />
         ))}
       </div>

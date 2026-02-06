@@ -1,3 +1,4 @@
+"use client";
 import GitHubProfile from "./components/githubprofile";
 import TechPreferences from "./components/techpreferences";
 import DomainPreferences from "./components/domainpreferences";

@@ -9,9 +9,14 @@ export default function AuthSuccessPage() {
 
   useEffect(() => {
     const token = searchParams.get("token");
+    const username = searchParams.get("username");
+    const avatar = searchParams.get("avatar");
 
     if (token) {
       localStorage.setItem("authToken", token);
+      if (username) localStorage.setItem("githubUsername", username);
+      if (avatar) localStorage.setItem("githubAvatar", avatar);
+      
       // Redirect to onboarding or wherever appropriate
       router.push("/onboarding"); 
     } else {
