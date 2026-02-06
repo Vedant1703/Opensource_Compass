@@ -29,7 +29,13 @@ func RegisterAuthRoutes(r *gin.Engine){
 			fmt.Sprintf("%v", user["id"]),
 		)
 
-		redirect := os.Getenv("FRONTEND_URL") + "/auth/success?token=" + jwtToken
+		userLogin := fmt.Sprintf("%v", user["login"])
+		userAvatar := fmt.Sprintf("%v", user["avatar_url"])
+
+		redirect := os.Getenv("FRONTEND_URL") + 
+			"/auth/success?token=" + jwtToken + 
+			"&username=" + userLogin + 
+			"&avatar=" + userAvatar
 
 		c.Redirect(http.StatusTemporaryRedirect, redirect)
 	})
