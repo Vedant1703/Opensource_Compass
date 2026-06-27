@@ -29,21 +29,23 @@ type RepoDTO struct {
 // NOTE: Using only PRIMARY topic per domain because GitHub ANDs multiple topics together
 func mapDomainToTopics(userDomains []string) []string {
 	mapping := map[string]string{
-		"Web Development":       "web",
-		"Mobile Development":    "mobile",
-		"AI & Machine Learning": "machine-learning",
-		"DevOps & Cloud":        "devops",
-		"Game Development":      "game",
-		"Security":              "security",
-		"Data Science":          "data-science",
-		"Tools & Libraries":     "cli",
-		"Backend Development":   "backend",
+		"web development":       "web",
+		"mobile development":    "mobile",
+		"ai & machine learning": "machine-learning",
+		"devops & cloud":        "devops",
+		"game development":      "game",
+		"security":              "security",
+		"data science":          "data-science",
+		"tools & libraries":     "cli",
+		"backend development":   "backend",
 		"backend":               "backend", // robust fallback
 	}
 
 	topics := []string{}
 	for _, domain := range userDomains {
-		if mapped, ok := mapping[domain]; ok {
+		// Frontend converts to lowercase, but we lowercase again just to be safe
+		lowerDomain := strings.ToLower(domain)
+		if mapped, ok := mapping[lowerDomain]; ok {
 			topics = append(topics, mapped)
 		}
 	}

@@ -34,6 +34,9 @@ func RegisterGithubRoutes(router *gin.Engine) {
 		languagesParam := c.Query("languages")
 		frameworksParam := c.Query("frameworks")
 		domainsParam := c.Query("domains")
+		if domainsParam == "" {
+			domainsParam = c.Query("domain")
+		}
 		// Support both q and name for search query
 		nameQuery := c.Query("q")
 		if nameQuery == "" {
