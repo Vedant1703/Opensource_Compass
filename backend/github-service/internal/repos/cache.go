@@ -62,3 +62,10 @@ func (c *RepoCache) Clean() {
 		}
 	}
 }
+
+// Returns size of cache
+func (c *RepoCache) Size() int {
+    c.mu.RLock()
+    defer c.mu.RUnlock()
+    return len(c.cache)
+}

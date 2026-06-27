@@ -10,6 +10,7 @@ import { getWatchlist, WatchedRepo } from "@/lib/api/watchlist";
 import { WatchButton } from "@/components/watch-button";
 import { syncEmail } from "@/lib/api/preferences";
 import { toast } from "react-hot-toast";
+import { TimeAgo } from "@/components/ui/time-ago";
 
 import PageWrapper from "@/components/ui/page-wrapper";
 
@@ -255,9 +256,10 @@ function Watchlist() {
   }, [token]);
 
   if (loading) return <div className="text-sm text-[#8b949e]">Loading watchlist...</div>;
-  if (repos.length === 0) return <div className="text-sm text-[#8b949e]">You are not watching any repositories.</div>;
+  if (!repos || repos.length === 0) return <div className="text-sm text-[#8b949e]">You are not watching any repositories.</div>;
 
   return (
+    
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {repos.map((repo) => (
           <div key={repo.id} className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 hover:border-[#58a6ff] transition-colors">
@@ -268,7 +270,7 @@ function Watchlist() {
                   <ExternalLink className="w-3 h-3 shrink-0" />
                 </Link>
                 <div className="text-xs text-[#8b949e] mt-1 flex items-center gap-2">
-                    <span className="flex items-center gap-1"><Bell className="w-3 h-3"/> Last checked: {repo.last_checked_at ? new Date(repo.last_checked_at).toLocaleTimeString() : 'Never'}</span>
+                    <span className="flex items-center gap-1"><Bell className="w-3 h-3"/> Last checked: {repo.last_checked_at ? <TimeAgo date={repo.last_checked_at} />: 'Never'}</span>
                 </div>
               </div>
               <div className="shrink-0">

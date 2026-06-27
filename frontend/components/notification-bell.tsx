@@ -4,9 +4,10 @@ import { useNotifications } from "@/contexts/notification-context";
 import { Bell } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { TimeAgo } from "@/components/ui/time-ago";
 
 export function NotificationBell() {
-  const { notifications, unreadCount, markAllAsRead, isConnected } = useNotifications();
+  const { notifications, unreadCount, markAllAsSeen, isConnected } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
 
   // Close dropdown when clicking outside (simplified for now)
@@ -15,8 +16,9 @@ export function NotificationBell() {
     <div className="relative">
       <button
         onClick={() => {
-            setIsOpen(!isOpen);
-            if (!isOpen && unreadCount > 0) markAllAsRead();
+            const opening = !isOpen;
+            setIsOpen(opening);
+            if (opening && unreadCount > 0) markAllAsSeen();
         }}
         className="relative p-2 text-[#8b949e] hover:text-[#c9d1d9] transition-colors rounded-md hover:bg-[#161b22]"
       >
@@ -40,7 +42,7 @@ export function NotificationBell() {
             <div className="p-3 border-b border-[#30363d] flex justify-between items-center">
               <h3 className="font-semibold text-sm text-[#c9d1d9]">Notifications</h3>
               <button 
-                onClick={markAllAsRead}
+                onClick={markAllAsSeen}
                 className="text-xs text-[#58a6ff] hover:underline"
               >
                 Mark all read
@@ -54,12 +56,15 @@ export function NotificationBell() {
                 </div>
               ) : (
                 <div className="divide-y divide-[#30363d]">
-                  {notifications.map((n, i) => (
-                    <div key={i} className="p-3 hover:bg-[#0d1117] transition-colors">
+                {notifications.map((n, i) => (
+                    <div key={i} className={`p-3 hover:bg-[#0d1117] transition-colors ${!n.isRead ? 'border-l-2 border-[#2f81f7]' : ''}`}>
                       <div className="flex justify-between items-start mb-1">
-                        <span className="textxs font-medium text-[#c9d1d9]">{n.repo}</span>
+                        <span className="text-xs font-medium text-[#c9d1d9] flex items-center">
+                          {!n.isRead && <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#2f81f7] mr-2" />}
+                          {n.repo}
+                        </span>
                         <span className="text-[10px] text-[#8b949e]">
-                            {new Date(n.timestamp).toLocaleTimeString()}
+                            <TimeAgo date={n.timestamp} />
                         </span>
                       </div>
                       <p className="text-sm text-[#8b949e]">{n.message}</p>

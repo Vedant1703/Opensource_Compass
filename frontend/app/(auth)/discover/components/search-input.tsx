@@ -22,7 +22,7 @@ export default function SearchInput({ onSearch, className = "" }: SearchInputPro
     <div className={`relative ${className}`}>
       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
         <svg
-          className="h-5 w-5 text-gray-400"
+          className="h-5 w-5 text-[#6e7681]"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
           fill="currentColor"
@@ -39,7 +39,7 @@ export default function SearchInput({ onSearch, className = "" }: SearchInputPro
         type="text"
         name="search"
         id="search"
-        className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        className="block w-full pl-10 pr-3 py-3 rounded-xl text-sm bg-[#161b22] border border-[#30363d] text-[#c9d1d9] placeholder-[#6e7681] focus:outline-none focus:border-[#2f81f7] focus:ring-1 focus:ring-[#2f81f7] transition-colors"
         placeholder="Search repositories (e.g. react, tensorflow)..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}

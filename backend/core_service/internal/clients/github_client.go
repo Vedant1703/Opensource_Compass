@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+
+	"core-service/internal/middleware"
 )
 
 type GitHubClient struct {
@@ -44,6 +46,10 @@ func (c *GitHubClient) FetchRepo(
 	)
 	if err != nil {
 		return nil, err
+	}
+
+	if reqID := middleware.GetRequestID(ctx); reqID != "" {
+		req.Header.Set("X-Request-ID", reqID)
 	}
 
 	resp, err := c.httpClient.Do(req)
@@ -95,6 +101,10 @@ func (c *GitHubClient) SearchRepos(
 		return nil, err
 	}
 
+	if reqID := middleware.GetRequestID(ctx); reqID != "" {
+		req.Header.Set("X-Request-ID", reqID)
+	}
+
 	addAuthHeader(req, token)
 
 	resp, err := c.httpClient.Do(req)
@@ -142,6 +152,10 @@ func (c *GitHubClient) FetchGoodFirstIssues(
 		return nil, err
 	}
 
+	if reqID := middleware.GetRequestID(ctx); reqID != "" {
+		req.Header.Set("X-Request-ID", reqID)
+	}
+
 	addAuthHeader(req, token)
 
 	resp, err := c.httpClient.Do(req)
@@ -183,6 +197,10 @@ func (c *GitHubClient) FetchReadme(
 	)
 	if err != nil {
 		return "", err
+	}
+
+	if reqID := middleware.GetRequestID(ctx); reqID != "" {
+		req.Header.Set("X-Request-ID", reqID)
 	}
 
 	addAuthHeader(req, token)

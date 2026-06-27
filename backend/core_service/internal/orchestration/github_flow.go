@@ -33,9 +33,11 @@ func (s *Service) FetchAndEnrichIssues(
 	var issues []Issue
 	for _, gi := range rawIssues {
 		issues = append(issues, Issue{
-			Title:  gi.Title,
-			Body:   gi.Body,
-			Labels: gi.Labels,
+			Title:  	 gi.Title,
+			Body:   	 gi.Body,
+			Labels:      gi.Labels,
+			IssueNumber: gi.Number,
+			IssueURL:    gi.HTMLURL,
 		})
 	}
 

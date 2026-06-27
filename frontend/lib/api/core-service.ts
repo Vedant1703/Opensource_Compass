@@ -7,6 +7,8 @@ export interface Issue {
     title: string;
     body: string;
     labels: string[];
+    issue_number?: number;
+    issue_url?: string;
     ai?: {
         summary?: string;
         difficulty?: string;

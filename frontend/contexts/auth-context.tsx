@@ -95,14 +95,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const logoutUrl = `${process.env.NEXT_PUBLIC_AUTH_SERVICE_URL}/auth/logout`;
       await fetch(logoutUrl, { method: 'POST' });
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      // Always clear local state, even if the API call fails
+      localStorage.removeItem('auth_token');
       setUserId(null);
       setUsername(null);
       setAvatar(null);
       setEmail(null);
+      setToken(null);
       setIsAuthenticated(false);
       router.push('/');
-    } catch (error) {
-      console.error("Logout failed:", error);
     }
   };
 

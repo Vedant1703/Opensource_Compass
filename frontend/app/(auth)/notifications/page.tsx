@@ -4,21 +4,11 @@ import { useNotifications } from "@/contexts/notification-context";
 import { Bell, ExternalLink, Trash2 } from "lucide-react";
 import Link from "next/link";
 import PageWrapper from "@/components/ui/page-wrapper";
+import { TimeAgo } from "@/components/ui/time-ago";
 
 export default function NotificationsPage() {
-  const { notifications, unreadCount, markAllAsRead, isConnected } = useNotifications();
+  const { notifications, unreadCount, markAllAsSeen, clearAll, isConnected } = useNotifications();
 
-  const formatTimeAgo = (date: Date) => {
-    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-    
-    if (seconds < 60) return `${seconds}s ago`;
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    return `${days}d ago`;
-  };
 
   return (
     <PageWrapper className="min-h-screen text-[#c9d1d9] p-6">
@@ -43,7 +33,7 @@ export default function NotificationsPage() {
           
           {notifications.length > 0 && (
             <button
-              onClick={markAllAsRead}
+              onClick={clearAll}
               className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
             >
               <Trash2 className="w-4 h-4" />
@@ -66,18 +56,20 @@ export default function NotificationsPage() {
             {notifications.map((notification) => (
               <div
                 key={notification.id}
-                className="bg-[#161b22]/60 backdrop-blur-md border border-[#30363d] rounded-lg p-4 hover:border-blue-500/50 transition-colors"
+                className={`bg-[#161b22]/60 backdrop-blur-md border border-[#30363d] rounded-lg p-4 hover:border-blue-500/50 transition-colors ${!notification.isRead ? 'border-l-2 border-l-[#2f81f7]' : ''}`}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <Bell className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                      {!notification.isRead && <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#2f81f7] mr-1" />}
                       <span className="text-sm font-semibold text-blue-400">
                         {notification.repo}
                       </span>
-                      <span className="text-xs text-gray-500">
-                        {formatTimeAgo(notification.timestamp)}
-                      </span>
+                      <TimeAgo 
+                        date={notification.timestamp} 
+                        className="text-xs text-gray-500" 
+                      />
                     </div>
                     
                     <div className="mb-2">

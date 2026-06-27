@@ -14,6 +14,7 @@ export default function FeaturedIssues({ issues, repoId }: FeaturedIssuesProps) 
     return null;
   }
 
+
   const displayIssues = issues.slice(0, 3);
 
   return (
@@ -26,7 +27,11 @@ export default function FeaturedIssues({ issues, repoId }: FeaturedIssuesProps) 
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {displayIssues.map((issue, index) => (
+        {displayIssues.map((issue, index) => {
+          const targetUrl = issue.issue_url 
+            ?? (issue.issue_number ? `https://github.com/${repoId}/issues/${issue.issue_number}` : `https://github.com/${repoId}/issues`);
+
+          return (
           <div
             key={index}
             className="bg-[#0d1117]/60 backdrop-blur-sm border border-[#30363d] rounded-xl p-5 hover:border-[#2f81f7] hover:shadow-lg hover:shadow-[#2f81f7]/10 transition-all group"
@@ -83,15 +88,15 @@ export default function FeaturedIssues({ issues, repoId }: FeaturedIssuesProps) 
             <div className="mt-4">
               <Button
                 variant="secondary"
-                className="w-full bg-[#21262d] hover:bg-[#30363d] border border-[#30363d]"
-                onClick={() => window.open(`https://github.com/${repoId}/issues`, '_blank')}
+                className="w-full bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] border border-[#30363d]"
+                onClick={() => window.open(targetUrl, '_blank')}
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
-                View on GitHub
+                  {issue.issue_number ? `View Issue #${issue.issue_number}` : 'View Issues'}
               </Button>
             </div>
           </div>
-        ))}
+        )})}
       </div>
     </div>
   );

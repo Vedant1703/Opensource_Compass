@@ -14,6 +14,7 @@ import (
 	"core-service/internal/preferences"
 	"core-service/internal/users"
 	"core-service/internal/watchlist"
+	"core-service/internal/middleware"
 	"core-service/routes"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -78,6 +79,10 @@ func main() {
 
 	// Wrap mux with CORS middleware so browser preflight OPTIONS requests are handled.
 	handler := auth.CORSMiddleware(mux)
+	
+	// Add RequestID as the outermost middleware
+	handler = middleware.RequestID(handler)
+
 	log.Printf("Core service running on :%s\n", cfg.ServerPort)
 	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, handler))
 }

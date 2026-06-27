@@ -1,11 +1,13 @@
 package clients
 
 type GitHubIssue struct {
-	ID     int      `json:"id"`
-	Title  string   `json:"title"`
-	Body   string   `json:"body"`
-	URL    string   `json:"url"`
-	Labels []string `json:"labels"`
+	ID      int      `json:"id"`
+	Number  int      `json:"number"`
+	Title   string   `json:"title"`
+	Body    string   `json:"body"`
+	HTMLURL string   `json:"html_url"`
+	URL     string   `json:"url"`
+	Labels  []string `json:"labels"`
 }
 
 type GitHubRepo struct {

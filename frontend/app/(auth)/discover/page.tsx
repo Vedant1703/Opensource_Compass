@@ -10,12 +10,14 @@ import RepoGrid from "./components/repogrid";
 import SkeletonCard from "./components/skeletoncard";
 import EmptyState from "./components/emptystate";
 import PageWrapper from "@/components/ui/page-wrapper";
+import { usePagination } from '@/lib/hooks/usePagination';
+import { PaginationControls } from '@/components/ui/pagination';
 
 export default function DiscoverPage() {
   const [repos, setRepos] = useState<Repository[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Preferences
   const [languages, setLanguages] = useState<string[]>([]);
   const [topics, setTopics] = useState<string[]>([]);
@@ -27,14 +29,14 @@ export default function DiscoverPage() {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Fetch user preferences from backend
       const prefs = await getPreferences();
-      
+
       setLanguages(prefs.languages || []);
       setTopics(prefs.topics || []);
       setExperienceLevel(prefs.experienceLevel || "Beginner");
-      
+
       // Fetch repositories using preferences
       const repositories = await searchRepositories(prefs.languages, [], prefs.topics);
       setRepos(repositories);
@@ -51,21 +53,21 @@ export default function DiscoverPage() {
   const handleSearch = useCallback(async (query: string) => {
     setSearchQuery(query);
     if (!query) {
-        loadRepos(); // reload default recommendations
-        return;
+      loadRepos(); // reload default recommendations
+      return;
     }
-    
+
     try {
-        setLoading(true);
-        setError(null);
-        const results = await searchRepositoriesByName(query);
-        setRepos(results);
+      setLoading(true);
+      setError(null);
+      const results = await searchRepositoriesByName(query);
+      setRepos(results);
     } catch (err: any) {
-        console.error("Failed to search repositories:", err);
-        setError("Failed to search repositories. Please try again.");
-        setRepos([]);
+      console.error("Failed to search repositories:", err);
+      setError("Failed to search repositories. Please try again.");
+      setRepos([]);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   }, [loadRepos]);
 
@@ -77,6 +79,11 @@ export default function DiscoverPage() {
   const hasPreferences = languages.length > 0 || topics.length > 0;
   // Show filters only if not searching and has preferences
   const showFilters = !searchQuery && hasPreferences;
+
+  const { paginatedItems, currentPage, totalPages, goToPage, nextPage, prevPage, hasPrev, hasNext } = usePagination({
+    items: repos,
+    pageSize: 9,
+  });
 
   return (
     <PageWrapper className="space-y-6">
@@ -128,7 +135,18 @@ export default function DiscoverPage() {
 
       {/* Repo Grid */}
       {repos.length > 0 && !loading && !error && (
-        <RepoGrid repos={repos} />
+        <>
+          <RepoGrid repos={paginatedItems} />
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPrev={prevPage}
+            onNext={nextPage}
+            onGoTo={goToPage}
+            hasPrev={hasPrev}
+            hasNext={hasNext}
+          />
+        </>
       )}
     </PageWrapper>
   );

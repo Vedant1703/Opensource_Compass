@@ -4,6 +4,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"crypto/rand"
+	"context"
+	"fmt"
 
 	"github.com/joho/godotenv"
 	"github.com/your-org/opensource-compass/ai-service/config"
@@ -35,6 +38,23 @@ func corsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// requestIDMiddleware adds an X-Request-ID header to every request.
+func requestIDMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		reqID := r.Header.Get("X-Request-ID")
+		if reqID == "" {
+			b := make([]byte, 16)
+			rand.Read(b)
+			reqID = fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
+		}
+		
+		type contextKey string
+		ctx := context.WithValue(r.Context(), contextKey("request_id"), reqID)
+		w.Header().Set("X-Request-ID", reqID)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
 func main() {
 	// Load the root .env file from the project root
 	// Load the root .env file from the project root (optional, for local dev)
@@ -60,5 +80,5 @@ func main() {
 	http.HandleFunc("/generate-setup-guide", routes.GenerateSetupGuide(setupGenerator))
 
 	log.Println("AI Service running on port", cfg.Port)
-	log.Fatal(http.ListenAndServe(":"+cfg.Port, corsMiddleware(http.DefaultServeMux)))
+	log.Fatal(http.ListenAndServe(":"+cfg.Port, corsMiddleware(requestIDMiddleware(http.DefaultServeMux))))
 }

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"core-service/internal/clients"
+	"core-service/internal/middleware"
 	"core-service/internal/users"
 	"encoding/json"
 	"net/http"
@@ -76,6 +77,7 @@ func (h *SetupGuideHandler) GetSetupGuide(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	middleware.Logf(r.Context(), "Fetching setup guide for %s/%s", owner, repoName)
 	// Generate Guide
 	guide, err := h.aiClient.GetSetupGuide(r.Context(), readme, user.ExperienceLevel)
 	if err != nil {

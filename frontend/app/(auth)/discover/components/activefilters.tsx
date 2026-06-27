@@ -2,6 +2,7 @@
 
 import { X, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from 'next/link';
 
 interface ActiveFiltersProps {
   languages: string[];
@@ -55,13 +56,15 @@ export default function ActiveFilters({ languages, topics, experienceLevel }: Ac
           </div>
         </div>
 
-        <button
-          onClick={() => router.push('/onboarding')}
+        import Link from 'next/link';
+
+        <Link
+          href="/settings"
           className="flex items-center gap-2 px-3 py-1.5 text-sm text-[#8b949e] hover:text-white transition-colors"
         >
           <Settings className="h-4 w-4" />
           Edit
-        </button>
+        </Link>
       </div>
     </div>
   );

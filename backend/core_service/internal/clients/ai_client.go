@@ -7,6 +7,8 @@ import (
 	"errors"
 	"net/http"
 	"time"
+
+	"core-service/internal/middleware"
 )
 
 type AIClient struct {
@@ -53,6 +55,10 @@ func (c *AIClient) AnalyzeIssue(
 	)
 	if err != nil {
 		return nil, err
+	}
+
+	if reqID := middleware.GetRequestID(ctx); reqID != "" {
+		req.Header.Set("X-Request-ID", reqID)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -105,6 +111,10 @@ func (c *AIClient) GetSetupGuide(
 	)
 	if err != nil {
 		return "", err
+	}
+
+	if reqID := middleware.GetRequestID(ctx); reqID != "" {
+		req.Header.Set("X-Request-ID", reqID)
 	}
 
 	req.Header.Set("Content-Type", "application/json")

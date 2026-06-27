@@ -23,11 +23,20 @@ func (s *Service) BuildRepoSignals(
 	if err != nil {
 		return signals
 	}
-	signals.TechStackMatchPct = 70
+	
+	userLangs := ExtractLanguages(userCtx)
+	userDomains := ExtractDomains(userCtx)
+	signals.TechStackMatchPct = ComputeTechMatch(userLangs, userDomains, repoData.Language, repoData.Topics)
 
 	updatedTime, _ := time.Parse(time.RFC3339, repoData.LastPushedAt)
 	if time.Since(updatedTime).Hours() < 24*30 {
 		signals.RecentActivity = true
+	}
+
+	// Mark MaintainerActive = true if the repo was updated in the last 7 days. Frequent recent pushes suggest active maintenance, which is rewarded in scoring (+20 points).
+	pushedTime, err := time.Parse(time.RFC3339, repoData.LastPushedAt)
+	if err == nil && time.Since(pushedTime).Hours() < 24*7 {
+		signals.MaintainerActive = true
 	}
 
 	if repoData.OpenIssues>0 {

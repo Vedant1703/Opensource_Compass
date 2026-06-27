@@ -54,7 +54,7 @@ func (r *Repository) List(ctx context.Context, userID string) ([]WatchedRepo, er
 	}
 	defer rows.Close()
 
-	var repos []WatchedRepo
+	repos := []WatchedRepo{}
 	for rows.Next() {
 		var repo WatchedRepo
 		if err := rows.Scan(&repo.ID, &repo.UserID, &repo.RepoOwner, &repo.RepoName, &repo.CreatedAt); err != nil {
@@ -91,7 +91,7 @@ func (r *Repository) ListAll(ctx context.Context) ([]WatchedRepo, error) {
 	}
 	defer rows.Close()
 
-	var repos []WatchedRepo
+	repos := []WatchedRepo{}
 	for rows.Next() {
 		var repo WatchedRepo
 		var lastCheckedAt *time.Time // Handle NULL

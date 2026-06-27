@@ -37,8 +37,16 @@ export default function ProgressStepper({
               </span>
             </div>
             {idx !== steps.length - 1 && (
-              <div className="flex-1 mx-4 h-[1px] bg-[#30363d] hidden sm:block" />
-            )}
+  <div
+    className={`flex-1 mx-4 h-[1px] hidden sm:block transition-all duration-1000 ease-in-out ${
+      idx < currentStep 
+        ? 'bg-[#238636]' 
+        : idx === currentStep 
+        ? 'bg-gradient-to-r from-[#238636] via-[#238636] to-[#30363d]' 
+        : 'bg-[#30363d]' 
+    }`}
+  />
+)}
           </div>
         );
       })}
