@@ -80,14 +80,16 @@ func (r *Repository) IsWatched(ctx context.Context, userID, owner, name string) 
 	return exists, nil
 }
 
-func (r *Repository) ListAll(ctx context.Context) ([]WatchedRepo, error) {
+func (r *Repository) ListAllChunked(ctx context.Context, limit, offset int) ([]WatchedRepo, error) {
 	query := `
 		SELECT id, user_id, repo_owner, repo_name, last_checked_at, latest_issue_number, created_at
 		FROM watched_repos
+		ORDER BY id
+		LIMIT $1 OFFSET $2
 	`
-	rows, err := r.db.Query(ctx, query)
+	rows, err := r.db.Query(ctx, query, limit, offset)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list all watchlist items: %w", err)
+		return nil, fmt.Errorf("failed to list all watchlist items chunked: %w", err)
 	}
 	defer rows.Close()
 
