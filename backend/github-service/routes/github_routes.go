@@ -58,6 +58,18 @@ func RegisterGithubRoutes(router *gin.Engine) {
 			domains = strings.Split(domainsParam, ",")
 		}
 
+		pageStr := c.Query("page")
+		limitStr := c.Query("limit")
+		page := 1
+		limit := 30
+		
+		if pageStr != "" {
+			fmt.Sscanf(pageStr, "%d", &page)
+		}
+		if limitStr != "" {
+			fmt.Sscanf(limitStr, "%d", &limit)
+		}
+
 		token := os.Getenv("GITHUB_TOKEN")
 		if token == "" {
 			c.JSON(http.StatusInternalServerError, gin.H{
@@ -66,7 +78,7 @@ func RegisterGithubRoutes(router *gin.Engine) {
 			return
 		}
 
-		repoList, err := repos.FetchRepos(languages, frameworks, domains, nameQuery, token, repoCache)
+		repoList, err := repos.FetchRepos(languages, frameworks, domains, nameQuery, token, repoCache, page, limit)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),

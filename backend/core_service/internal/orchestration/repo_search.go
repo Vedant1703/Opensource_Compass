@@ -39,7 +39,7 @@ func (s *Service) SearchReposForUser(
 		domainQuery = "backend"
 	}
 
-	repos, err := s.githubClient.SearchRepos(ctx, languageQuery, domainQuery, "", token)
+	repos, err := s.githubClient.SearchRepos(ctx, languageQuery, domainQuery, "", token, 1, 30) // Hardcoded 1, 30 for SearchReposForUser recommendation internal tasks
 	if err != nil {
 		return nil, err
 	}
@@ -60,10 +60,12 @@ func (s *Service) SearchRepositories(
 	ctx context.Context,
 	query string,
 	token string,
+	page int,
+	limit int,
 ) ([]clients.GitHubRepo, error) {
 	if s.githubClient == nil {
 		return nil, errors.New("github client not configured")
 	}
 
-	return s.githubClient.SearchRepos(ctx, "", "", query, token)
+	return s.githubClient.SearchRepos(ctx, "", "", query, token, page, limit)
 }

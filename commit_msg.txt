@@ -1,0 +1,11 @@
+feat: add backend pagination to repository discovery
+
+This replaces the massive client-side data fetch in the discovery page
+with true server-side pagination.
+
+- Updated Next.js frontend to send 'page' and 'limit' parameters.
+- Replaced the local usePagination slicing with manual offset page tracking.
+- Passed 'page' and 'limit' query params through core_service down into
+  github-service, dynamically bounding the GitHub REST API queries to per-page 9.
+This resolves issues where the full dataset loading could crash or heavily
+tax bandwidth and memory for large user preference configurations.
