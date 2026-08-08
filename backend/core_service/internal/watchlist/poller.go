@@ -53,8 +53,6 @@ func (p *Poller) Start(ctx context.Context) {
 
 func (p *Poller) poll(ctx context.Context) {
 	log.Println("Poller: Starting poll cycle")
-	// TODO: Fetch distinct repos to avoid duplicate checks if multiple users watch the same repo
-	// For MVP, we iterate all entries. Optimization: implement "ListAllUniqueRepos" in repository.
 
 	limit := 100
 	offset := 0
@@ -64,62 +62,71 @@ func (p *Poller) poll(ctx context.Context) {
 	var wg sync.WaitGroup
 
 	for {
-		entries, err := p.repo.ListAllChunked(ctx, limit, offset)
+		uniqueRepos, err := p.repo.ListAllUniqueReposChunked(ctx, limit, offset)
 		if err != nil {
-			log.Printf("Poller: Error listing watched repos chunked at offset %d: %v", offset, err)
+			log.Printf("Poller: Error listing unique watched repos at offset %d: %v", offset, err)
 			break
 		}
 		
-		if len(entries) == 0 {
+		if len(uniqueRepos) == 0 {
 			break
 		}
 		
-		log.Printf("Poller: Processing chunk of %d entries (offset %d)", len(entries), offset)
+		log.Printf("Poller: Processing chunk of %d unique repos (offset %d)", len(uniqueRepos), offset)
 
-		for _, entry := range entries {
+		for _, repoEntry := range uniqueRepos {
 			wg.Add(1)
 			sem <- struct{}{} // Acquire token
 			
-			go func(e WatchedRepo) {
+			go func(e UniqueRepo) {
 				defer wg.Done()
 				defer func() { <-sem }() // Release token
 				
-				log.Printf("Poller: Checking repo %s/%s (Last issue: %d)", e.RepoOwner, e.RepoName, e.LatestIssueNumber)
+				log.Printf("Poller: Checking unique repo %s/%s", e.RepoOwner, e.RepoName)
 				latestNum, title, issueURL, err := p.githubClient.GetLatestIssue(e.RepoOwner, e.RepoName)
 				if err != nil {
 					log.Printf("Poller: Error fetching latest issue for %s/%s: %v", e.RepoOwner, e.RepoName, err)
 					return
 				}
 				
-				if latestNum > e.LatestIssueNumber {
-					log.Printf("Poller: New issue detected for %s/%s! Updating DB and notifying user %s", e.RepoOwner, e.RepoName, e.UserID)
+				// Find all subscribed users who are outdated for this repo
+				outdatedEntries, err := p.repo.GetOutdatedWatches(ctx, e.RepoOwner, e.RepoName, latestNum)
+				if err != nil {
+					log.Printf("Poller: Error fetching outdated watches for %s/%s: %v", e.RepoOwner, e.RepoName, err)
+					return
+				}
 
-					// Updates DB
-					if err := p.repo.UpdateLastChecked(ctx, e.ID, latestNum); err != nil {
-						log.Printf("Poller: Error updating last checked for %s/%s: %v", e.RepoOwner, e.RepoName, err)
-					}
+				if len(outdatedEntries) > 0 {
+					log.Printf("Poller: New issue detected for %s/%s! Updating DB and notifying %d users", e.RepoOwner, e.RepoName, len(outdatedEntries))
+					for _, watch := range outdatedEntries {
+						// Updates DB
+						if err := p.repo.UpdateLastChecked(ctx, watch.ID, latestNum); err != nil {
+							log.Printf("Poller: Error updating last checked for watch ID %d: %v", watch.ID, err)
+							continue
+						}
 
-					// Send notification with issue details via all notifiers
-					payload := map[string]interface{}{
-						"type":         "new_issue",
-						"repo":         e.RepoOwner + "/" + e.RepoName,
-						"issue_number": latestNum,
-						"issue_title":  title,
-						"issue_url":    issueURL,
-						"message":      "New issue detected!",
-					}
+						// Send notification with issue details via all notifiers
+						payload := map[string]interface{}{
+							"type":         "new_issue",
+							"repo":         e.RepoOwner + "/" + e.RepoName,
+							"issue_number": latestNum,
+							"issue_title":  title,
+							"issue_url":    issueURL,
+							"message":      "New issue detected!",
+						}
 
-					for _, notifier := range p.notifiers {
-						if err := notifier.NotifyUser(e.UserID, payload); err != nil {
-							log.Printf("Poller: Error notifying user %s via notifier: %v", e.UserID, err)
-						} else {
-							log.Printf("Poller: Successfully notified user %s", e.UserID)
+						for _, notifier := range p.notifiers {
+							if err := notifier.NotifyUser(watch.UserID, payload); err != nil {
+								log.Printf("Poller: Error notifying user %s via notifier: %v", watch.UserID, err)
+							} else {
+								log.Printf("Poller: Successfully notified user %s", watch.UserID)
+							}
 						}
 					}
 				} else {
 					log.Printf("Poller: No new issues for %s/%s", e.RepoOwner, e.RepoName)
 				}
-			}(entry)
+			}(repoEntry)
 		}
 		
 		offset += limit

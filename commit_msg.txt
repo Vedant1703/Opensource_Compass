@@ -1,11 +1,10 @@
-feat: add backend pagination to repository discovery
+perf: deduplicate watched-repo polling
 
-This replaces the massive client-side data fetch in the discovery page
-with true server-side pagination.
+This resolves an N+1 API fetching vulnerability where multiple users
+subscribing to the same project would trigger duplicate GitHub REST API
+calls for the latest issue.
 
-- Updated Next.js frontend to send 'page' and 'limit' parameters.
-- Replaced the local usePagination slicing with manual offset page tracking.
-- Passed 'page' and 'limit' query params through core_service down into
-  github-service, dynamically bounding the GitHub REST API queries to per-page 9.
-This resolves issues where the full dataset loading could crash or heavily
-tax bandwidth and memory for large user preference configurations.
+Instead of iterating over individual watch entries, the poller now queries
+the database for unique repositories in chunks, makes a single API call per
+unique project, and then queries a pushdown DB filter (latest_issue_number < ?)
+to retrieve all outdated users to fan out WS notifications simultaneously.
