@@ -24,8 +24,11 @@ export default function DiscoverPage() {
   const [experienceLevel, setExperienceLevel] = useState<string>("Beginner");
   const [username, setUsername] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const PAGE_SIZE = 9;
 
-  const loadRepos = useCallback(async () => {
+  const loadRepos = useCallback(async (page: number = 1) => {
     try {
       setLoading(true);
       setError(null);
@@ -38,8 +41,10 @@ export default function DiscoverPage() {
       setExperienceLevel(prefs.experienceLevel || "Beginner");
 
       // Fetch repositories using preferences
-      const repositories = await searchRepositories(prefs.languages, [], prefs.topics);
+      const repositories = await searchRepositories(prefs.languages, [], prefs.topics, page, PAGE_SIZE);
       setRepos(repositories);
+      setHasNextPage(repositories.length === PAGE_SIZE);
+      setCurrentPage(page);
     } catch (err: any) {
       console.error("Failed to load repositories:", err);
       // If error is 401, it will be handled by the API client or global error boundary
@@ -53,15 +58,17 @@ export default function DiscoverPage() {
   const handleSearch = useCallback(async (query: string) => {
     setSearchQuery(query);
     if (!query) {
-      loadRepos(); // reload default recommendations
+      loadRepos(1); // reload default recommendations
       return;
     }
 
     try {
       setLoading(true);
       setError(null);
-      const results = await searchRepositoriesByName(query);
+      const results = await searchRepositoriesByName(query, 1, PAGE_SIZE);
       setRepos(results);
+      setHasNextPage(results.length === PAGE_SIZE);
+      setCurrentPage(1);
     } catch (err: any) {
       console.error("Failed to search repositories:", err);
       setError("Failed to search repositories. Please try again.");
@@ -72,18 +79,37 @@ export default function DiscoverPage() {
   }, [loadRepos]);
 
   useEffect(() => {
-    loadRepos();
+    loadRepos(1);
   }, []);
+
+  const handlePageChange = async (newPage: number) => {
+    if (searchQuery) {
+      try {
+        setLoading(true);
+        const results = await searchRepositoriesByName(searchQuery, newPage, PAGE_SIZE);
+        setRepos(results);
+        setHasNextPage(results.length === PAGE_SIZE);
+        setCurrentPage(newPage);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err: any) {
+        console.error("Failed to load page:", err);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      await loadRepos(newPage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   // Check if user has set preferences
   const hasPreferences = languages.length > 0 || topics.length > 0;
   // Show filters only if not searching and has preferences
   const showFilters = !searchQuery && hasPreferences;
 
-  const { paginatedItems, currentPage, totalPages, goToPage, nextPage, prevPage, hasPrev, hasNext } = usePagination({
-    items: repos,
-    pageSize: 9,
-  });
+  const hasPrev = currentPage > 1;
+  const hasNext = hasNextPage;
+  const totalPages = currentPage + (hasNext ? 1 : 0); // Approximate total pages for PaginationControls
 
   return (
     <PageWrapper className="space-y-6">
@@ -91,7 +117,7 @@ export default function DiscoverPage() {
       <DiscoverHero
         username={username}
         repoCount={repos.length}
-        onRefresh={loadRepos}
+        onRefresh={() => loadRepos(currentPage)}
         isLoading={loading}
       />
 
@@ -120,7 +146,7 @@ export default function DiscoverPage() {
 
       {/* Error State */}
       {error && !loading && (
-        <EmptyState type="error" onRetry={loadRepos} />
+        <EmptyState type="error" onRetry={() => loadRepos(currentPage)} />
       )}
 
       {/* No Preferences State */}
@@ -136,13 +162,13 @@ export default function DiscoverPage() {
       {/* Repo Grid */}
       {repos.length > 0 && !loading && !error && (
         <>
-          <RepoGrid repos={paginatedItems} />
+          <RepoGrid repos={repos} />
           <PaginationControls
             currentPage={currentPage}
             totalPages={totalPages}
-            onPrev={prevPage}
-            onNext={nextPage}
-            onGoTo={goToPage}
+            onPrev={() => handlePageChange(currentPage - 1)}
+            onNext={() => handlePageChange(currentPage + 1)}
+            onGoTo={(page: number) => handlePageChange(page)}
             hasPrev={hasPrev}
             hasNext={hasNext}
           />

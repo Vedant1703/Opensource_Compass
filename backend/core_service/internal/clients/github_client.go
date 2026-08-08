@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"core-service/internal/middleware"
@@ -76,6 +77,8 @@ func (c *GitHubClient) SearchRepos(
 	domains string,
 	nameQuery string,
 	token string,
+	page int,
+	limit int,
 ) ([]GitHubRepo, error) {
 
 	if c.baseURL == "" {
@@ -90,6 +93,8 @@ func (c *GitHubClient) SearchRepos(
 	if nameQuery != "" {
 		params.Set("q", nameQuery)
 	}
+	params.Set("page", strconv.Itoa(page))
+	params.Set("limit", strconv.Itoa(limit))
 
 	req, err := http.NewRequestWithContext(
 		ctx,

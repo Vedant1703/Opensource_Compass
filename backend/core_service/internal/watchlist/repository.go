@@ -12,6 +12,11 @@ type Repository struct {
 	db *pgxpool.Pool
 }
 
+type UniqueRepo struct {
+	RepoOwner string
+	RepoName  string
+}
+
 func NewRepository(db *pgxpool.Pool) *Repository {
 	return &Repository{db: db}
 }
@@ -80,14 +85,16 @@ func (r *Repository) IsWatched(ctx context.Context, userID, owner, name string) 
 	return exists, nil
 }
 
-func (r *Repository) ListAll(ctx context.Context) ([]WatchedRepo, error) {
+func (r *Repository) ListAllChunked(ctx context.Context, limit, offset int) ([]WatchedRepo, error) {
 	query := `
 		SELECT id, user_id, repo_owner, repo_name, last_checked_at, latest_issue_number, created_at
 		FROM watched_repos
+		ORDER BY id
+		LIMIT $1 OFFSET $2
 	`
-	rows, err := r.db.Query(ctx, query)
+	rows, err := r.db.Query(ctx, query, limit, offset)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list all watchlist items: %w", err)
+		return nil, fmt.Errorf("failed to list all watchlist items chunked: %w", err)
 	}
 	defer rows.Close()
 
@@ -117,4 +124,55 @@ func (r *Repository) UpdateLastChecked(ctx context.Context, id int, latestIssueN
 		return fmt.Errorf("failed to update watchlist item: %w", err)
 	}
 	return nil
+}
+
+func (r *Repository) ListAllUniqueReposChunked(ctx context.Context, limit, offset int) ([]UniqueRepo, error) {
+	query := `
+		SELECT DISTINCT repo_owner, repo_name
+		FROM watched_repos
+		ORDER BY repo_owner, repo_name
+		LIMIT $1 OFFSET $2
+	`
+	rows, err := r.db.Query(ctx, query, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list unique repos: %w", err)
+	}
+	defer rows.Close()
+
+	var repos []UniqueRepo
+	for rows.Next() {
+		var repo UniqueRepo
+		if err := rows.Scan(&repo.RepoOwner, &repo.RepoName); err != nil {
+			return nil, fmt.Errorf("failed to scan row: %w", err)
+		}
+		repos = append(repos, repo)
+	}
+	return repos, nil
+}
+
+func (r *Repository) GetOutdatedWatches(ctx context.Context, owner, name string, latestNum int) ([]WatchedRepo, error) {
+	query := `
+		SELECT id, user_id, repo_owner, repo_name, last_checked_at, latest_issue_number, created_at
+		FROM watched_repos
+		WHERE repo_owner = $1 AND repo_name = $2 AND latest_issue_number < $3
+	`
+	rows, err := r.db.Query(ctx, query, owner, name, latestNum)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get outdated watches: %w", err)
+	}
+	defer rows.Close()
+
+	var repos []WatchedRepo
+	for rows.Next() {
+		var repo WatchedRepo
+		var lastCheckedAt *time.Time // Handle NULL
+		if err := rows.Scan(&repo.ID, &repo.UserID, &repo.RepoOwner, &repo.RepoName, &lastCheckedAt, &repo.LatestIssueNumber, &repo.CreatedAt); err != nil {
+			return nil, fmt.Errorf("failed to scan row: %w", err)
+		}
+		if lastCheckedAt != nil {
+			repo.LastCheckedAt = *lastCheckedAt
+		}
+		repos = append(repos, repo)
+	}
+	return repos, nil
 }

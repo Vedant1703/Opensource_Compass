@@ -17,7 +17,9 @@ export interface Repository {
 export async function searchRepositories(
     languages: string[],
     frameworks: string[] = [],
-    domains: string[] = []
+    domains: string[] = [],
+    page: number = 1,
+    limit: number = 9
 ): Promise<Repository[]> {
     try {
         const params = new URLSearchParams();
@@ -33,6 +35,9 @@ export async function searchRepositories(
         if (domains.length > 0) {
             params.append('domain', domains.map(d => d.toLowerCase()).join(','));
         }
+        
+        params.append('page', page.toString());
+        params.append('limit', limit.toString());
 
         // Use full backend URL for production
         const url = `${GITHUB_SERVICE_URL}/repos/search?${params.toString()}`;
@@ -72,7 +77,7 @@ export async function fetchRepository(owner: string, repo: string): Promise<Repo
     }
 }
 
-export async function searchRepositoriesByName(query: string): Promise<Repository[]> {
+export async function searchRepositoriesByName(query: string, page: number = 1, limit: number = 9): Promise<Repository[]> {
     try {
         const token = localStorage.getItem('auth_token');
         const headers: HeadersInit = {
@@ -84,7 +89,7 @@ export async function searchRepositoriesByName(query: string): Promise<Repositor
         }
 
         const CORE_SERVICE_URL = process.env.NEXT_PUBLIC_CORE_SERVICE_URL;
-        const url = `${CORE_SERVICE_URL}/repos/search?q=${encodeURIComponent(query)}`;
+        const url = `${CORE_SERVICE_URL}/repos/search?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}`;
         console.log("Calling Core service:", url);
 
         const response = await fetch(url, {

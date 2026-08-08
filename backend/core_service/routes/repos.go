@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -53,7 +54,19 @@ func (h *RepoHandler) HandleSearch(w http.ResponseWriter, r *http.Request) {
 		githubToken = ""
 	}
 
-	repos, err := h.service.SearchRepositories(ctx, query, githubToken)
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("limit")
+	page := 1
+	limit := 30
+	
+	if pageStr != "" {
+		fmt.Sscanf(pageStr, "%d", &page)
+	}
+	if limitStr != "" {
+		fmt.Sscanf(limitStr, "%d", &limit)
+	}
+
+	repos, err := h.service.SearchRepositories(ctx, query, githubToken, page, limit)
 	if err != nil {
 		log.Printf("HandleSearch: SearchRepositories failed: %v", err)
 		http.Error(w, "failed to search repos: "+err.Error(), http.StatusInternalServerError)

@@ -66,7 +66,7 @@ func buildQuery(prefix string, values []string) string {
 }
 
 // generateCacheKey creates a unique key from query parameters
-func generateCacheKey(languages, frameworks, domains []string, nameQuery string) string {
+func generateCacheKey(languages, frameworks, domains []string, nameQuery string, page, limit int) string {
 	// Sort slices to ensure same key for same params regardless of order
 	sortedLangs := make([]string, len(languages))
 	copy(sortedLangs, languages)
@@ -81,11 +81,13 @@ func generateCacheKey(languages, frameworks, domains []string, nameQuery string)
 	sort.Strings(sortedDomains)
 
 	// Create string representation
-	key := fmt.Sprintf("l:%s|f:%s|d:%s|n:%s",
+	key := fmt.Sprintf("l:%s|f:%s|d:%s|n:%s|p:%d|lim:%d",
 		strings.Join(sortedLangs, ","),
 		strings.Join(sortedFrameworks, ","),
 		strings.Join(sortedDomains, ","),
 		nameQuery,
+		page,
+		limit,
 	)
 
 	// Hash the key to keep it short
@@ -93,9 +95,9 @@ func generateCacheKey(languages, frameworks, domains []string, nameQuery string)
 	return hex.EncodeToString(hash[:])
 }
 
-func FetchRepos(languages []string, frameworks []string, domains []string, nameQuery string, token string, cache *RepoCache) ([]RepoDTO, error) {
+func FetchRepos(languages []string, frameworks []string, domains []string, nameQuery string, token string, cache *RepoCache, page int, limit int) ([]RepoDTO, error) {
 	// Generate cache key
-	cacheKey := generateCacheKey(languages, frameworks, domains, nameQuery)
+	cacheKey := generateCacheKey(languages, frameworks, domains, nameQuery, page, limit)
 
 	// Check cache first
 	if cache != nil {
@@ -133,11 +135,8 @@ func FetchRepos(languages []string, frameworks []string, domains []string, nameQ
 
 	log.Println("Github search query: ", query)
 
-	// Use page 1 instead of random page to ensure we get results
-	page := 1
-
-	url := fmt.Sprintf("https://api.github.com/search/repositories?q=%s&page=%d&per_page=30&sort=stars&order=desc",
-		url.QueryEscape(query), page,
+	url := fmt.Sprintf("https://api.github.com/search/repositories?q=%s&page=%d&per_page=%d&sort=stars&order=desc",
+		url.QueryEscape(query), page, limit,
 	)
 
 	req, err := http.NewRequest("GET", url, nil)
