@@ -145,7 +145,7 @@ func FetchRepos(languages []string, frameworks []string, domains []string, nameQ
 		return nil, err
 	}
 
-	req.Header.Set("Authorization", "token "+token)
+	req.Header.Set("Authorization", "Bearer "+strings.TrimSpace(token))
 	req.Header.Set("Accept", "application/vnd.github+json")
 
 	client := &http.Client{}

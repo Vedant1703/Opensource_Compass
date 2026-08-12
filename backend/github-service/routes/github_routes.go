@@ -147,7 +147,7 @@ func RegisterGithubRoutes(router *gin.Engine) {
 			return
 		}
 
-		req.Header.Set("Authorization", "token "+token)
+		req.Header.Set("Authorization", "Bearer "+strings.TrimSpace(token))
 		req.Header.Set("Accept", "application/vnd.github+json")
 
 		client := &http.Client{}
