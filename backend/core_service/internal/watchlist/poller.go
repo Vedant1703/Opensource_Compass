@@ -3,7 +3,6 @@ package watchlist
 import (
 	"context"
 	"log"
-	"sync"
 	"time"
 )
 
@@ -56,10 +55,6 @@ func (p *Poller) poll(ctx context.Context) {
 
 	limit := 100
 	offset := 0
-	
-	// Create a worker pool semaphore
-	sem := make(chan struct{}, 10) // Concurrency bounded to 10
-	var wg sync.WaitGroup
 
 	for {
 		uniqueRepos, err := p.repo.ListAllUniqueReposChunked(ctx, limit, offset)
@@ -74,15 +69,8 @@ func (p *Poller) poll(ctx context.Context) {
 		
 		log.Printf("Poller: Processing chunk of %d unique repos (offset %d)", len(uniqueRepos), offset)
 
-		for _, repoEntry := range uniqueRepos {
-			wg.Add(1)
-			sem <- struct{}{} // Acquire token
-			
-			go func(e UniqueRepo) {
-				defer wg.Done()
-				defer func() { <-sem }() // Release token
-				
-				log.Printf("Poller: Checking unique repo %s/%s", e.RepoOwner, e.RepoName)
+		for _, e := range uniqueRepos {
+			log.Printf("Poller: Checking unique repo %s/%s", e.RepoOwner, e.RepoName)
 				latestNum, title, issueURL, err := p.githubClient.GetLatestIssue(e.RepoOwner, e.RepoName)
 				if err != nil {
 					log.Printf("Poller: Error fetching latest issue for %s/%s: %v", e.RepoOwner, e.RepoName, err)
@@ -126,12 +114,13 @@ func (p *Poller) poll(ctx context.Context) {
 				} else {
 					log.Printf("Poller: No new issues for %s/%s", e.RepoOwner, e.RepoName)
 				}
-			}(repoEntry)
+
+				// Sleep to respect GitHub secondary rate limits (no concurrent requests)
+				time.Sleep(1 * time.Second)
 		}
 		
 		offset += limit
 	}
 	
-	wg.Wait()
 	log.Println("Poller: cycle finished")
 }
