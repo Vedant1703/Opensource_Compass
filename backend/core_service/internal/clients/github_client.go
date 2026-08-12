@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -294,7 +295,8 @@ func (c *GitHubClient) GetLatestIssue(owner, name string) (number int, title str
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return 0, "", "", errors.New("github service returned non-200 response")
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return 0, "", "", fmt.Errorf("github service returned status %d: %s", resp.StatusCode, string(bodyBytes))
 	}
 
 	var result struct {

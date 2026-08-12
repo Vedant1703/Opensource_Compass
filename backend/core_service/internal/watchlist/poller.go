@@ -74,14 +74,14 @@ func (p *Poller) poll(ctx context.Context) {
 				latestNum, title, issueURL, err := p.githubClient.GetLatestIssue(e.RepoOwner, e.RepoName)
 				if err != nil {
 					log.Printf("Poller: Error fetching latest issue for %s/%s: %v", e.RepoOwner, e.RepoName, err)
-					return
+					continue
 				}
 				
 				// Find all subscribed users who are outdated for this repo
 				outdatedEntries, err := p.repo.GetOutdatedWatches(ctx, e.RepoOwner, e.RepoName, latestNum)
 				if err != nil {
 					log.Printf("Poller: Error fetching outdated watches for %s/%s: %v", e.RepoOwner, e.RepoName, err)
-					return
+					continue
 				}
 
 				if len(outdatedEntries) > 0 {
