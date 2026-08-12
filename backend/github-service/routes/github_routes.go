@@ -7,6 +7,7 @@ import (
 	"github-service/internal/repos"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -64,10 +65,14 @@ func RegisterGithubRoutes(router *gin.Engine) {
 		limit := 30
 		
 		if pageStr != "" {
-			fmt.Sscanf(pageStr, "%d", &page)
+			if p, err := strconv.Atoi(pageStr); err == nil {
+				page = p
+			}
 		}
 		if limitStr != "" {
-			fmt.Sscanf(limitStr, "%d", &limit)
+			if l, err := strconv.Atoi(limitStr); err == nil {
+				limit = l
+			}
 		}
 
 		token := os.Getenv("GITHUB_TOKEN")

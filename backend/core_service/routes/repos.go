@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"core-service/internal/auth"
@@ -60,10 +61,14 @@ func (h *RepoHandler) HandleSearch(w http.ResponseWriter, r *http.Request) {
 	limit := 30
 	
 	if pageStr != "" {
-		fmt.Sscanf(pageStr, "%d", &page)
+		if p, err := strconv.Atoi(pageStr); err == nil {
+			page = p
+		}
 	}
 	if limitStr != "" {
-		fmt.Sscanf(limitStr, "%d", &limit)
+		if l, err := strconv.Atoi(limitStr); err == nil {
+			limit = l
+		}
 	}
 
 	repos, err := h.service.SearchRepositories(ctx, query, githubToken, page, limit)

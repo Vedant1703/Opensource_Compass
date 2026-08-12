@@ -90,7 +90,6 @@ export async function searchRepositoriesByName(query: string, page: number = 1, 
 
         const CORE_SERVICE_URL = process.env.NEXT_PUBLIC_CORE_SERVICE_URL;
         const url = `${CORE_SERVICE_URL}/repos/search?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}`;
-        console.log("Calling Core service:", url);
 
         const response = await fetch(url, {
             headers: headers
